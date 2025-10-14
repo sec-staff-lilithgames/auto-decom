@@ -1,0 +1,25 @@
+External Tool Requirements
+==========================
+
+The repository omits several large prebuilt tool distributions. Populate the following paths under `tools/` after cloning so the automation scripts work the same way as on the maintainer's machine.
+
+Required directories
+--------------------
+- `tools/jadx/` – Jadx 1.5.0 release bundle.
+  - Download from https://github.com/skylot/jadx/releases/tag/v1.5.0
+  - Extract the archive so that the `bin/` and `lib/` folders sit directly inside `tools/jadx/`.
+- `tools/jdk-17.0.16+8/` – Temurin/OpenJDK 17 distribution for macOS (x64 or aarch64 to match your host).
+  - Obtain from https://adoptium.net/temurin/releases/ (choose the 17.0.16+8 build).
+  - After installing or extracting, copy the full `Contents/` structure into `tools/jdk-17.0.16+8/`.
+- `tools/jdk-21.0.8+9/` – Temurin/OpenJDK 21 distribution for macOS.
+  - Download the 21.0.8+9 archive from https://adoptium.net/temurin/releases/ and mirror the same directory layout inside `tools/jdk-21.0.8+9/`.
+
+Verification tips
+-----------------
+- Confirm `tools/jadx/bin/jadx` is executable (`chmod +x`).
+- Run `tools/jdk-17.0.16+8/Contents/Home/bin/java -version` and `tools/jdk-21.0.8+9/Contents/Home/bin/java -version` to ensure the installs are intact.
+- If you keep the toolchains elsewhere, update any scripts or environment variables accordingly before running the automation.
+
+Optional tooling
+----------------
+Other folders under `tools/` (e.g., Ghidra, radare2) remain committed, but you may replace them with newer builds if needed—adjust local paths to match.
