@@ -65,7 +65,7 @@ def locate_apk(workspace: Path) -> Path:
     return unique_candidates[0]
 
 
-def run_pipeline(workspace: Path, apk_path: Path, mode: str) -> Path:
+def run_pipeline(workspace: Path, apk_path: Path, mode: str, output_root: Path) -> Path:
     logger = configure_logging()
     label_overrides = None
     if mode == "java":
@@ -88,6 +88,18 @@ def run_pipeline(workspace: Path, apk_path: Path, mode: str) -> Path:
         residuals.extend([workspace / "dex", workspace / "dex_decomp", workspace / "dex_packages"])
     for residual in residuals:
         parallel_rmtree(residual)
+
+    output_root = output_root.expanduser()
+    output_root.mkdir(parents=True, exist_ok=True)
+
+    def finalize_archive(archive_path: Path) -> Path:
+        destination = output_root / archive_path.name
+        if archive_path.resolve() == destination.resolve():
+            return destination
+        if destination.exists():
+            destination.unlink()
+        shutil.move(str(archive_path), destination)
+        return destination
 
     try:
         with display:
@@ -148,7 +160,7 @@ def run_pipeline(workspace: Path, apk_path: Path, mode: str) -> Path:
                     display.set_status("pipeline", "failed", "Packaging stage failed")
                     raise
                 cleanup_targets.append(packager.packages_dir)
-                final_archive = archive_path
+                final_archive = finalize_archive(archive_path)
                 display.set_status("zipper", "completed", f"Archive: {final_archive.name}")
                 display.set_status("pipeline", "completed", "Pipeline finished successfully")
                 display.log(f"Result archive ready at {final_archive}")
@@ -215,10 +227,7 @@ def run_pipeline(workspace: Path, apk_path: Path, mode: str) -> Path:
                 display.set_status("pipeline", "failed", "Packaging stage failed")
                 raise
 
-            final_archive = workspace / archive_path.name
-            if final_archive.exists():
-                final_archive.unlink()
-            shutil.move(str(archive_path), final_archive)
+            final_archive = finalize_archive(archive_path)
             output_dir = archive_path.parent
             display.set_status("zipper", "completed", f"Archive: {final_archive.name}")
             display.set_status("pipeline", "completed", "Pipeline finished successfully")
@@ -243,6 +252,11 @@ def run_pipeline(workspace: Path, apk_path: Path, mode: str) -> Path:
 def main() -> int:
     parser = argparse.ArgumentParser(description="AutoDe pipeline")
     parser.add_argument("apk", help="Path to APK file to process")
+    parser.add_argument(
+        "output",
+        nargs="?",
+        help="Directory to place the final archive (default: current working directory)",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--so", action="store_true", help="Run native shared-object pipeline")
     group.add_argument("--java", action="store_true", help="Run JADX-based Java pipeline")
@@ -250,8 +264,18 @@ def main() -> int:
     mode = "java" if args.java else "so"
 
     workspace = Path(__file__).resolve().parent
+    caller_cwd = Path.cwd()
+    if args.output:
+        output_candidate = Path(args.output).expanduser()
+        if output_candidate.is_absolute():
+            output_root = output_candidate
+        else:
+            output_root = (caller_cwd / output_candidate).resolve()
+    else:
+        output_root = caller_cwd
+
     try:
-        run_pipeline(workspace, Path(args.apk), mode)
+        run_pipeline(workspace, Path(args.apk), mode, output_root)
         return 0
     except Exception as exc:  # noqa: BLE001
         logging.getLogger("autode").exception("Pipeline failed: %s", exc)
