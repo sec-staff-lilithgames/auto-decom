@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: r_anal
+Description: The UNIX-like reverse engineering toolkit
+Version: 6.0.4
+Requires: r_util r_reg r_syscall r_search r_cons r_flag r_muta r_arch r_esil
+Cflags: -I${includedir}/libr
+Libs: -L${libdir} -lr_anal -ldl

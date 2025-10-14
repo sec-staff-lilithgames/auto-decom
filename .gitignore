@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.zip
+so/
+so_decomp/
+dex/
+dex_decomp/
+dex_packages/
+output/
+*.log
+ghidra_proj_*/
+gh_proj_*/
+r2home_*/
+tools/jadx/
+tools/jdk-*/

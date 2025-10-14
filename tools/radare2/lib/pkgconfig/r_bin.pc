@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: r_bin
+Description: The UNIX-like reverse engineering toolkit
+Version: 6.0.4
+Requires: r_util r_io r_socket r_magic
+Cflags: -I${includedir}/libr
+Libs: -L${libdir} -lr_bin -ldl

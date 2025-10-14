@@ -1,0 +1,66 @@
+.Dd Jul 10, 2025
+.Dt RAPATCH2 1
+.Sh NAME
+.Nm rapatch2
+.Nd binary patching utility
+.Sh SYNOPSIS
+.Nm rapatch2
+.Op Fl psRqv
+.Op Ar patchfile
+.Op Ar targetfile
+.Sh DESCRIPTION
+A utility for applying binary patches to files using a human-friendly text format.
+.Pp
+The patches must be written in a file using the following syntax:
+.Bd -literal -offset indent
+^# -> comments
+. -> execute command
+! -> execute command
+OFFSET { code block }
+OFFSET "string"
+OFFSET 01020304
+OFFSET : assembly
++ {code}|"str"|0210|: asm
+.Ed
+.Sh OPTIONS
+.Bl -tag -width Fl
+.It Fl p Ar N
+Patch level, skip N directories
+.It Fl R
+Reverse patch
+.It Fl s
+Sandbox mode, disable scripts and r2 command execution
+.It Fl q
+Be quiet
+.It Fl v
+Show version
+.El
+.Sh ENVIRONMENT
+.Pp
+rapatch2 does not use any environment variables.
+.Sh EXAMPLES
+.Pp
+Generate a patch using radiff2 and apply it with rapatch2:
+.Pp
+  $ radiff2 -u bin1 bin2 > patch
+  $ rapatch2 -p 1 < patch
+.Pp
+Patch a specific file:
+.Pp
+  $ rapatch2 bin1 patch
+.Pp
+Create a simple patch file manually:
+.Pp
+  $ cat > mypatch.r2
+  0x100 "Hello World"
+  0x200 9090
+  0x300 : nop
+  ^D
+  $ rapatch2 target_binary mypatch.r2
+.Sh SEE ALSO
+.Pp
+.Xr radare2(1)
+.Xr radiff2(1)
+.Sh AUTHORS
+.Pp
+Written by pancake <pancake@nopcode.org>.
