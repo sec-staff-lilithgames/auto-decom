@@ -52,12 +52,14 @@ class Decompiler:
         ghidra_headless: Optional[str] = None,
         radare2_bin: Optional[str] = None,
         script_dir: Optional[Path] = None,
+        input_root: Optional[Path] = None,
+        output_root: Optional[Path] = None,
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> None:
         self.workspace = workspace
         self.logger = logger
-        self.input_root = self.workspace / "so"
-        self.output_root = self.workspace / "so_decomp"
+        self.input_root = input_root if input_root is not None else (self.workspace / "so")
+        self.output_root = output_root if output_root is not None else (self.workspace / "so_decomp")
         self.script_dir = script_dir or (self.workspace / "ghidra_scripts")
         self.ghidra_headless = self._discover_headless(ghidra_headless)
         self.java_home = self._discover_java_home()
@@ -392,7 +394,7 @@ def _run_ghidra_engine(
             check=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
+            universal_newlines=True,
             env=env,
             timeout=120,
         )
@@ -464,7 +466,7 @@ def _run_radare_engine(
             check=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
+            universal_newlines=True,
             env=env,
             timeout=120,
         )
@@ -509,7 +511,7 @@ def _radare_list_functions(
             check=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
+            universal_newlines=True,
             env=env_copy,
             timeout=120,
         )

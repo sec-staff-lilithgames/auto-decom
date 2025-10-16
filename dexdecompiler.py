@@ -26,12 +26,14 @@ class DexDecompiler:
         workspace: Path,
         logger: logging.Logger,
         jadx_path: Optional[str] = None,
+        input_root: Optional[Path] = None,
+        output_root: Optional[Path] = None,
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> None:
         self.workspace = workspace
         self.logger = logger
-        self.input_root = self.workspace / "dex"
-        self.output_root = self.workspace / "dex_decomp"
+        self.input_root = input_root if input_root is not None else (self.workspace / "dex")
+        self.output_root = output_root if output_root is not None else (self.workspace / "dex_decomp")
         self.jadx_path, self.jadx_env = self._discover_jadx(jadx_path)
         self.java_home = self._discover_java_home()
         if not self.jadx_env:
@@ -225,7 +227,7 @@ def _run_jadx(job: Tuple[str, str, Optional[str], int, Optional[Dict[str, str]]]
             check=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
+            universal_newlines=True,
             env=env,
             timeout=120,
         )
